@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расчёт стоимости пошива</title>
+<style>
+*{box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;margin:0;padding:10px;background:#EDE9E2;color:#3E3F3D;font-size:14px;}
+.container{max-width:1200px;margin:0 auto;}
+h1{font-size:18px;margin:0 0 10px;font-weight:600;}
+.top-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+input,select,textarea{padding:8px;border:1px solid #C0B5A8;border-radius:4px;font-size:16px;font-family:inherit;background:#FFFDF8;color:#3E3F3D;width:100%;}
+input:focus,select:focus{outline:2px solid #6B7A8F;border-color:transparent;}
+button{padding:10px 14px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-family:inherit;background:#6B7A8F;color:#fff;font-weight:500;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+button.secondary{background:#D8D2C8;color:#3E3F3D;}
+button.danger{background:#A8846E;color:#fff;padding:6px 10px;font-size:12px;}
+button.mini{background:#D8D2C8;color:#3E3F3D;padding:5px 8px;font-size:12px;}
+button.add-line{background:transparent;color:#6B7A8F;padding:6px 0;font-size:13px;text-align:left;font-weight:500;margin-right:12px;}
+button.green{background:#96A096;}
+.header-block{background:#F7F4EE;border-radius:6px;padding:10px;margin-bottom:10px;box-shadow:0 1px 2px rgba(62,63,61,.06);}
+.header-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+.header-grid label{display:block;font-size:11px;color:#8A8578;font-weight:600;margin-bottom:2px;text-transform:uppercase;}
+.item{background:#FFFDF8;border:1px solid #C0B5A8;border-radius:6px;margin-bottom:12px;overflow:hidden;}
+.item-head{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#A8B5A3;color:#fff;font-size:14px;font-weight:600;flex-wrap:wrap;}
+.item-head select,.item-head input{flex:1;min-width:100px;padding:6px 8px;font-size:13px;font-weight:500;background:#FFFDF8;color:#3E3F3D;border:none;}
+.item-head .sep{color:#E6EAE4;}
+.item-info{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:8px;padding:8px 10px;background:#E6EAE4;border-bottom:1px solid #C5CFC1;font-size:13px;align-items:center;}
+.item-info label{font-size:11px;color:#5A6855;font-weight:600;white-space:nowrap;}
+.item-info input{padding:6px;font-size:14px;}
+.work-row{padding:8px 10px;background:#FDFBF6;border-bottom:1px solid #E5DFD3;}
+.work-row label{font-size:11px;color:#8A8578;font-weight:600;margin-bottom:2px;display:block;text-transform:uppercase;}
+.section{background:#FDFBF6;border-bottom:1px solid #E5DFD3;}
+.section-head{padding:6px 10px;background:#EDE9E2;font-size:11px;color:#8A8578;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.section-body{padding:0 10px 4px;overflow-x:auto;}
+.section-table{width:100%;border-collapse:collapse;font-size:13px;min-width:500px;}
+.section-table th{text-align:left;padding:4px 6px;color:#8A8578;font-weight:600;font-size:11px;text-transform:uppercase;border-bottom:1px solid #D8D2C8;}
+.section-table th.num{text-align:right;}
+.section-table td{padding:3px 4px;vertical-align:middle;}
+.section-table td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:500;}
+.section-table td.actions{width:60px;text-align:right;}
+.row-input{width:100%;padding:6px;font-size:13px;background:#FFFDF8;border:1px solid transparent;border-radius:3px;}
+.row-input:hover{border-color:#D8D2C8;}
+.row-select{width:100%;padding:6px;font-size:13px;background:#FFFDF8;border:1px solid transparent;min-width:180px;}
+.qty-input{width:80px;text-align:right;}
+.markups-section{background:#EDE6DC;border-bottom:1px solid #D4C7B5;}
+.markups-head{padding:6px 10px;background:#E0D5C4;font-size:11px;color:#7A6B58;font-weight:700;text-transform:uppercase;}
+.markups-body{padding:6px 10px;}
+.markup-row{display:grid;grid-template-columns:2fr 1fr auto;gap:6px;margin-bottom:4px;font-size:13px;}
+.item-footer{padding:8px 10px;background:#F7F4EE;border-top:2px solid #A8B5A3;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.item-total{margin-left:auto;font-size:16px;font-weight:700;}
+.master-row{display:flex;align-items:center;gap:12px;padding:8px 10px;background:#EDE6DC;border-top:1px solid #D4C7B5;font-size:13px;flex-wrap:wrap;}
+.master-row label{font-size:11px;color:#7A6B58;font-weight:600;text-transform:uppercase;}
+.master-row select{width:auto;padding:6px 8px;font-size:13px;}
+.master-row input[type="checkbox"]{width:auto;}
+.totals-block{background:#F7F4EE;border-radius:6px;padding:12px;margin-top:12px;box-shadow:0 1px 2px rgba(62,63,61,.06);}
+.totals-row{display:flex;justify-content:space-between;padding:5px 0;font-size:14px;}
+.totals-row.grand{font-size:18px;font-weight:700;border-top:2px solid #3E3F3D;margin-top:8px;padding-top:12px;}
+.markup-checks{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0;padding:8px 0;border-top:1px dashed #C0B5A8;border-bottom:1px dashed #C0B5A8;}
+.markup-checks label{display:flex;align-items:center;gap:6px;font-size:13px;}
+.markup-checks input[type="checkbox"]{width:auto;}
+.saved-panel{background:#F7F4EE;border-radius:6px;padding:10px;margin-bottom:10px;display:none;}
+.saved-list{max-height:400px;overflow-y:auto;}
+.saved-item{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid #E5DFD3;flex-wrap:wrap;}
+.saved-info{flex:1;min-width:150px;}
+.saved-name{font-weight:600;}
+.saved-date{font-size:12px;color:#8A8578;}
+.saved-sum{font-weight:600;color:#6B7A8F;}
+.hint-note{font-size:11px;color:#8A8578;padding:4px 10px;background:#FDFBF6;}
+@media(max-width:700px){
+  .header-grid{grid-template-columns:1fr;}
+  .item-info{grid-template-columns:auto 1fr;}
+  .markup-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="no-print">
+  <h1>РАСЧЁТ СТОИМОСТИ ПОШИВА</h1>
+  <div class="top-actions">
+    <button onclick="newOrder()">Новый расчёт</button>
+    <button class="secondary" onclick="showSaved()">Мои расчёты</button>
+    <button class="secondary" onclick="saveToCloud()">Сохранить</button>
+    <button class="secondary" onclick="exportBackup()">Резервная копия</button>
+    <button class="secondary" onclick="importBackup()">Восстановить</button>
+    <button class="secondary" onclick="showExecutors()">Исполнители</button>
+    <button class="secondary" onclick="showDesigners()">Дизайнеры</button>
+  </div>
+  <div class="saved-panel" id="savedPanel">
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+      <b>Мои расчёты</b>
+      <button class="mini" onclick="hideSaved()">Закрыть</button>
+    </div>
+    <div class="saved-list" id="savedList"></div>
+  </div>
+  <div class="saved-panel" id="executorsPanel">
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+      <b>Исполнители</b>
+      <button class="mini" onclick="hideExecutors()">Закрыть</button>
+    </div>
+    <div id="executorsList"></div>
+    <button class="secondary" onclick="addExecutor()" style="margin-top:8px;">+ Добавить исполнителя</button>
+  </div>
+  <div class="saved-panel" id="designersPanel">
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+      <b>Дизайнеры</b>
+      <button class="mini" onclick="hideDesigners()">Закрыть</button>
+    </div>
+    <div id="designersList"></div>
+    <button class="secondary" onclick="addDesigner()" style="margin-top:8px;">+ Добавить дизайнера</button>
+  </div>
+  <div class="header-block">
+    <div class="header-grid">
+      <div><label>Номер заказа</label><input type="text" id="orderNum" placeholder="244"></div>
+      <div><label>Дата готовности</label><input type="text" id="readyDate" placeholder="15.10.2026"></div>
+      <div><label>Дизайнер</label><select id="designer" onchange="state.designer=this.value"></select></div>
+      <div><label>Проект</label><input type="text" id="projectName" placeholder="Название"></div>
+    </div>
+  </div>
+  <div id="itemsContainer"></div>
+  <button onclick="addItem()" style="width:100%;padding:12px;font-size:14px;">+ Добавить изделие</button>
+  <div class="totals-block">
+    <div class="totals-row"><span>Сумма по изделиям:</span><span id="itemsTotal">0 ₽</span></div>
+    <div class="markup-checks">
+      <label><input type="checkbox" id="urgency50" onchange="syncHeader();recalc();"> Срочно +50%</label>
+      <label><input type="checkbox" id="urgency100" onchange="syncHeader();recalc();"> Очень срочно +100%</label>
+    </div>
+    <div class="totals-row" id="markupRow" style="display:none;"><span>Общие наценки:</span><span id="markupsTotal">0 ₽</span></div>
+    <div class="totals-row grand"><span>ВСЕГО К ОПЛАТЕ:</span><span id="grandTotal">0 ₽</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+      <button onclick="printDoc()">Печать / PDF</button>
+      <button class="secondary" onclick="copyForSheets()">Скопировать для Google Таблиц</button>
+      <button class="green" onclick="printMasters()">Ведомость ЗП</button>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+// ==================== ПРАЙС ====================
+const CATEGORIES = ['Тюль','Портьера без подкладки','Портьера на подкладке','Римская штора','Ламбрекен','Бандо','Покрывало','Подушка','Валик','Столовый текстиль','Чехол'];
+
+const PRICE_MAIN = [
+  {name:'Пошив тюля с утяжелителем на шторной ленте',unit:'м',price:420,cat:'Тюль'},
+  {name:'Пошив тюля с подгибкой низа на шторной ленте',unit:'м',price:450,cat:'Тюль'},
+  {name:'Пошив тюля под люверсы',unit:'м',price:630,cat:'Тюль'},
+  {name:'Пошив тюля на ручной складке: бантовая, односторонняя, столбик',unit:'м',price:875,cat:'Тюль'},
+  {name:'Пошив тюля на ручной складке: двулистник, трехлистник, бокал',unit:'м',price:1000,cat:'Тюль'},
+  {name:'Пошив тюля "кафе"',unit:'м',price:490,cat:'Тюль'},
+  {name:'Пошив портьеры без подкладки на шторной ленте',unit:'м',price:525,cat:'Портьера без подкладки'},
+  {name:'Пошив портьеры без подкладки под люверсы',unit:'м',price:770,cat:'Портьера без подкладки'},
+  {name:'Пошив портьеры без подкладки (ручная складка: бантовая)',unit:'м',price:1000,cat:'Портьера без подкладки'},
+  {name:'Пошив портьеры без подкладки (ручная складка: двулистник)',unit:'м',price:1150,cat:'Портьера без подкладки'},
+  {name:'Пошив портьеры без подкладки (полубесшовная, бантовая)',unit:'м',price:1140,cat:'Портьера без подкладки'},
+  {name:'Пошив портьеры без подкладки (полубесшовная, двулистник)',unit:'м',price:1490,cat:'Портьера без подкладки'},
+  {name:'Пошив портьеры без подкладки (бесшовная, бантовая)',unit:'м',price:1300,cat:'Портьера без подкладки'},
+  {name:'Пошив портьеры без подкладки (бесшовная, двулистник)',unit:'м',price:1600,cat:'Портьера без подкладки'},
+  {name:'Пошив портьеры на подкладке на шторной ленте',unit:'м',price:770,cat:'Портьера на подкладке'},
+  {name:'Пошив портьеры на подкладке под люверсы',unit:'м',price:1050,cat:'Портьера на подкладке'},
+  {name:'Пошив портьеры на подкладке (ручная складка: бантовая)',unit:'м',price:1400,cat:'Портьера на подкладке'},
+  {name:'Пошив портьеры на подкладке (ручная складка: двулистник)',unit:'м',price:1800,cat:'Портьера на подкладке'},
+  {name:'Пошив портьеры на подкладке (полубесшовная, бантовая)',unit:'м',price:1550,cat:'Портьера на подкладке'},
+  {name:'Пошив портьеры на подкладке (полубесшовная, двулистник)',unit:'м',price:1900,cat:'Портьера на подкладке'},
+  {name:'Пошив портьеры на подкладке (бесшовная, бантовая)',unit:'м',price:1720,cat:'Портьера на подкладке'},
+  {name:'Пошив портьеры на подкладке (бесшовная, двулистник)',unit:'м',price:2100,cat:'Портьера на подкладке'},
+  {name:'Прокладка из мулетона, блэкаута, димаута',unit:'м',price:525,cat:'Портьера на подкладке'},
+  {name:'Пошив римской шторы без подкладки на тесьме',unit:'кв.м',price:1450,cat:'Римская штора'},
+  {name:'Пошив римской шторы без подкладки на кулисках',unit:'кв.м',price:1550,cat:'Римская штора'},
+  {name:'Пошив римской шторы на подкладке на тесьме',unit:'кв.м',price:1600,cat:'Римская штора'},
+  {name:'Пошив римской шторы на подкладке на кулисках',unit:'кв.м',price:1800,cat:'Римская штора'},
+  {name:'Ламбрекен на шторной ленте без сборки с прямым низом',unit:'м',price:320,cat:'Ламбрекен'},
+  {name:'Ламбрекен на шторной ленте с фигурным низом',unit:'м',price:450,cat:'Ламбрекен'},
+  {name:'Сваг/перекид до 120 см',unit:'шт',price:1500,cat:'Ламбрекен'},
+  {name:'Сваг/перекид до 160 см',unit:'шт',price:1800,cat:'Ламбрекен'},
+  {name:'Сваг/перекид более 160 см',unit:'шт',price:2000,cat:'Ламбрекен'},
+  {name:'Сваг, переходящий в джабот, до 100 см',unit:'шт',price:2200,cat:'Ламбрекен'},
+  {name:'Сваг, переходящий в джабот, более 100 см',unit:'шт',price:2500,cat:'Ламбрекен'},
+  {name:'Сваг вертикальный',unit:'м',price:1600,cat:'Ламбрекен'},
+  {name:'Джабот',unit:'шт',price:1200,cat:'Ламбрекен'},
+  {name:'Кокилье',unit:'шт',price:1200,cat:'Ламбрекен'},
+  {name:'Колокольчик',unit:'шт',price:800,cat:'Ламбрекен'},
+  {name:'Галстук',unit:'шт',price:900,cat:'Ламбрекен'},
+  {name:'Пояс для ламбрекена',unit:'м',price:250,cat:'Ламбрекен'},
+  {name:'Стянуть ламбрекен под размер',unit:'м',price:80,cat:'Ламбрекен'},
+  {name:'Собрать ламбрекен под размер',unit:'м',price:300,cat:'Ламбрекен'},
+  {name:'Пошив бандо с прямым краем до 40 см',unit:'м',price:800,cat:'Бандо'},
+  {name:'Пошив бандо с фигурным краем до 40 см',unit:'м',price:1500,cat:'Бандо'},
+  {name:'Покрывало-плед с обработкой края',unit:'кв.м',price:650,cat:'Покрывало'},
+  {name:'Покрывало-плед на подкладке',unit:'кв.м',price:850,cat:'Покрывало'},
+  {name:'Покрывало на подкладке с синтепоном',unit:'кв.м',price:700,cat:'Покрывало'},
+  {name:'Стёжка на синтепоне (рисунок до 30х30)',unit:'кв.м',price:2000,cat:'Покрывало'},
+  {name:'Стёжка на синтепоне (рисунок более 30х30)',unit:'кв.м',price:1600,cat:'Покрывало'},
+  {name:'Стёжка линиями шагом до 30 см',unit:'кв.м',price:1500,cat:'Покрывало'},
+  {name:'Стёжка линиями шагом более 30 см',unit:'кв.м',price:850,cat:'Покрывало'},
+  {name:'Чехол на молнии без декора до 50x50',unit:'шт',price:450,cat:'Подушка'},
+  {name:'Чехол на молнии без декора более 50x50',unit:'шт',price:550,cat:'Подушка'},
+  {name:'Чехол на молнии с декором до 50x50',unit:'шт',price:500,cat:'Подушка'},
+  {name:'Чехол на молнии с декором более 50x50',unit:'шт',price:600,cat:'Подушка'},
+  {name:'Чехол на молнии в рамку 50x50',unit:'шт',price:700,cat:'Подушка'},
+  {name:'Чехол на молнии в рамку притачную 50x50',unit:'шт',price:900,cat:'Подушка'},
+  {name:'Чехол на валик до 1 м',unit:'шт',price:800,cat:'Валик'},
+  {name:'Валик поролоновый d 20 см до 1 м',unit:'шт',price:800,cat:'Валик'},
+  {name:'Внутренний чехол на валик из таффеты',unit:'шт',price:800,cat:'Валик'},
+  {name:'Внутренняя подушка до 50x50',unit:'шт',price:500,cat:'Подушка'},
+  {name:'Внутренняя подушка более 50x50',unit:'шт',price:700,cat:'Подушка'},
+  {name:'Внутренняя подушка без наполнителя 50x50',unit:'шт',price:250,cat:'Подушка'},
+  {name:'Внутренняя подушка без наполнителя более 50x50',unit:'шт',price:350,cat:'Подушка'},
+  {name:'Уплотнение чехла из синтепона и подкладки',unit:'шт',price:300,cat:'Подушка'},
+  {name:'Салфетка до 45x45, евроуголки',unit:'шт',price:400,cat:'Столовый текстиль'},
+  {name:'Скатерть прямоугольная, крой',unit:'кв.м',price:120,cat:'Столовый текстиль'},
+  {name:'Скатерть круглая, крой',unit:'кв.м',price:140,cat:'Столовый текстиль'},
+  {name:'Обработка края оборкой',unit:'м',price:700,cat:'Столовый текстиль'},
+  {name:'Обработка края швом вподгибку 2-5 см',unit:'м',price:270,cat:'Столовый текстиль'},
+  {name:'Обработка края обтачкой, бейкой',unit:'м',price:400,cat:'Столовый текстиль'},
+  {name:'Обработка края двойным кантом',unit:'м',price:500,cat:'Столовый текстиль'},
+  {name:'Чехол на стул простой модели',unit:'шт',price:3300,cat:'Чехол'},
+  {name:'Чехол мебельный с бортиком до 75x75',unit:'шт',price:2600,cat:'Чехол'},
+  {name:'Чехол мебельный с бортиком более 75x75',unit:'шт',price:3000,cat:'Чехол'},
+  {name:'Подушка-сидушка',unit:'шт',price:1400,cat:'Чехол'},
+  {name:'Сиденье на стул простой модели',unit:'шт',price:1000,cat:'Чехол'},
+];
+
+const OPS = [
+  {name:'Демонтаж строчки',unit:'м',price:60},
+  {name:'Дополнительная ВТО',unit:'м',price:200},
+  {name:'Евроуголок на кантах, бордюрах',unit:'шт',price:350},
+  {name:'Изготовление и притачивание двойного канта',unit:'м',price:550},
+  {name:'Изготовление и притачивание канта-рулика',unit:'м',price:350},
+  {name:'Изготовление и притачивание одинарного канта',unit:'м',price:450},
+  {name:'Карман под утяжелитель',unit:'м',price:250},
+  {name:'Кармашек под грузик',unit:'шт',price:70},
+  {name:'Обтяжка пуговицы тканью',unit:'шт',price:100},
+  {name:'Обработка края оборкой',unit:'м',price:700},
+  {name:'Обработка края обтачкой, бейкой',unit:'м',price:400},
+  {name:'Подгибка низа в 1 слой',unit:'м',price:95},
+  {name:'Подгибка низа с руликом',unit:'м',price:200},
+  {name:'Притачивание декоративной тесьмы',unit:'м',price:300,decor:true},
+  {name:'Притачивание пушистого канта',unit:'м',price:500},
+  {name:'Притачивание тесьмы со сложным декором',unit:'м',price:500},
+  {name:'Пришивание пуговиц, грузиков, кисточек',unit:'шт',price:50},
+  {name:'Сборка римской шторы на карниз',unit:'кв.м',price:200,roman:'assembly'},
+  {name:'Стачной вертикальный',unit:'м',price:200,auto:'vert'},
+  {name:'Стачной горизонтальный',unit:'м',price:200,auto:'horiz'},
+  {name:'Стачивание полотен (строчка+оверлок)',unit:'м',price:200},
+  {name:'Стянуть шторную ленту под размер',unit:'м',price:90,autoTape:true},
+  {name:'Установка люверсов',unit:'шт',price:100},
+  {name:'Шов "американка"',unit:'м',price:200},
+  {name:'Вставить колечки в тесьму для римских штор',unit:'кв.м',price:100,roman:'circles',halfOf:'Сборка римской шторы на карниз'},
+  {name:'Гребешок',unit:'м',price:145},
+  {name:'Надставка для увеличения высоты',unit:'м',price:300},
+  {name:'Петли, завязки',unit:'шт',price:100},
+  {name:'Подхват простой',unit:'шт',price:500},
+  {name:'Подхват фигурный',unit:'шт',price:700},
+  {name:'Пришить колечко к кулиске',unit:'шт',price:50},
+  {name:'Строчка на потайной машине',unit:'м',price:200},
+  {name:'Строчка на прямострочной машине',unit:'м',price:145},
+  {name:'Ушки на римской шторе (пара)',unit:'шт',price:1000},
+  {name:'Центровка шторной ленты',unit:'м',price:70},
+];
+
+OPS.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+
+function getOpPrice(op){
+  if(!op) return 0;
+  if(op.halfOf){
+    const base = OPS.find(x=>x.name===op.halfOf);
+    if(base) return base.price / 2;
+  }
+  return op.price;
+}
+
+const MATERIALS = [
+  {name:'Шторная лента с кордами 6 см',unit:'м',price:80,tape:true},
+  {name:'Шторная лента с кордами 8 см',unit:'м',price:90,tape:true},
+  {name:'Шторная лента с кордами 10 см',unit:'м',price:110,tape:true},
+  {name:'Шторная лента без кордов 8 см',unit:'м',price:110,tape:true},
+  {name:'Шторная лента без кордов 10 см',unit:'м',price:130,tape:true},
+  {name:'Шторная лента без кордов 12 см',unit:'м',price:150,tape:true},
+  {name:'Тесьма для римских штор',unit:'м',price:60,romanTape:true},
+  {name:'Люверсная лента',unit:'м',price:120},
+  {name:'Колечки для римских штор',unit:'шт',price:12,romanCircle:true},
+  {name:'Кнопка пластиковая прозрачная',unit:'шт',price:20},
+  {name:'Зажим прозрачный для римских штор',unit:'шт',price:14},
+  {name:'Лента липучка велкро 2,5 см',unit:'м',price:60,velcro:true},
+  {name:'Синтепон 280 см, 100 гр',unit:'м',price:500,synth:true},
+  {name:'Синтепон термостежка 280 см',unit:'м',price:600,synth:true},
+  {name:'Таффета, тонкая подкладка для чехлов',unit:'м',price:300,taffeta:true},
+  {name:'Молния потайная',unit:'м',price:80,zipper:true},
+  {name:'Утяжелитель 13 гр',unit:'шт',price:100,weight:true},
+  {name:'Утяжелитель 25 гр',unit:'шт',price:120,weight:true},
+  {name:'Утяжелитель 50 гр',unit:'шт',price:180,weight:true},
+];
+
+const MARKUPS = [
+  {id:'complex_fabric',name:'Сложные ткани (бархат, шенилл)',pct:40,base:'volume'},
+  {id:'mesh_lace',name:'Сетка, кружево, жатки',pct:30,base:'volume'},
+  {id:'heavy',name:'Вес более 8 кг',pct:30,base:'volume'},
+  {id:'slanted',name:'Наклонные окна',pct:50,base:'base'},
+  {id:'arch',name:'Арочные окна',pct:50,base:'base'},
+  {id:'rapport',name:'Подбор раппорта',pct:10,base:'base'},
+  {id:'remake',name:'Перешив изделия',pct:30,base:'volume'},
+  {id:'roman_combo',name:'Комбинированные римские',pct:15,base:'volume'},
+  {id:'lambrequin_lining',name:'Ламбрекен на подкладке',pct:30,base:'volume'},
+  {id:'bando_multi',name:'Бандо из нескольких тканей',pct:50,base:'volume'},
+];
+
+// ==================== ФИЛЬТР ФУРНИТУРЫ ====================
+function getMaterialsFor(cat){
+  if(cat === 'Римская штора') return MATERIALS.filter(m=>m.romanTape || m.romanCircle || m.velcro);
+  if(cat === 'Портьера без подкладки' || cat === 'Портьера на подкладке' || cat === 'Тюль') return MATERIALS.filter(m=>m.tape || m.weight);
+  if(cat === 'Покрывало') return MATERIALS.filter(m=>m.synth);
+  if(cat === 'Подушка' || cat === 'Валик' || cat === 'Чехол') return MATERIALS.filter(m=>m.zipper || m.taffeta);
+  if(cat === 'Бандо') return MATERIALS.filter(m=>m.velcro);
+  if(cat === 'Ламбрекен') return MATERIALS.filter(m=>m.tape || m.velcro);
+  if(cat === 'Столовый текстиль') return [];
+  return MATERIALS;
+}
+
+function getCategoryType(cat){
+  if(cat === 'Римская штора' || cat === 'Покрывало' || cat === 'Столовый текстиль') return 'квм';
+  if(cat === 'Подушка' || cat === 'Валик' || cat === 'Чехол') return 'шт';
+  return 'пм';
+}
+function getSecondDimLabel(cat){
+  if(cat === 'Покрывало') return 'Длина, м';
+  return 'Высота, м';
+}
+
+// ==================== СОСТОЯНИЕ ====================
+const DEFAULT_EXECUTORS = [
+  {id:'sh1', name:'Швея 1', cuts:true},
+  {id:'sh2', name:'Швея 2', cuts:false},
+  {id:'sh3', name:'Швея 3', cuts:false},
+  {id:'zk1', name:'Закройщик', cuts:false}
+];
+const DEFAULT_DESIGNERS = ['Трухачева Юля','Дизайнер 2','Дизайнер 3'];
+
+function loadExecutors(){
+  try{ const s = localStorage.getItem('curtain_executors'); if(s) return JSON.parse(s); }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_EXECUTORS));
+}
+function saveExecutors(){
+  try{ localStorage.setItem('curtain_executors', JSON.stringify(state.executors||[])); }catch(e){}
+}
+function loadDesigners(){
+  try{ const s = localStorage.getItem('curtain_designers'); if(s) return JSON.parse(s); }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_DESIGNERS));
+}
+function saveDesigners(){
+  try{ localStorage.setItem('curtain_designers', JSON.stringify(state.designers||[])); }catch(e){}
+}
+
+let state = {orderNum:'',readyDate:'',designer:'',projectName:'',items:[],urgency50:false,urgency100:false,executors:loadExecutors(),designers:loadDesigners()};
+let itemCounter = 0;
+let executorCounter = 4;
+
+// ==================== ВЫРАЖЕНИЯ ====================
+function evalExpr(str){
+  if(typeof str === 'number') return str;
+  if(!str) return 0;
+  let s = String(str).replace(/,/g,'.').replace(/'/g,'').replace(/\s/g,'');
+  if(!s) return 0;
+  if(!/^[0-9+\-*/().]+$/.test(s)) return parseFloat(s)||0;
+  try{
+    const r = Function('"use strict";return ('+s+')')();
+    return typeof r === 'number' && isFinite(r) ? r : 0;
+  }catch(e){ return parseFloat(s)||0; }
+}
+
+// ==================== ИСПОЛНИТЕЛИ ====================
+function showExecutors(){
+  renderExecutors();
+  document.getElementById('executorsPanel').style.display = 'block';
+  document.getElementById('savedPanel').style.display = 'none';
+  document.getElementById('designersPanel').style.display = 'none';
+}
+function hideExecutors(){ document.getElementById('executorsPanel').style.display = 'none'; }
+function renderExecutors(){
+  const c = document.getElementById('executorsList');
+  if(!c) return;
+  const list = state.executors||[];
+  c.innerHTML = list.map((ex,i)=>`
+    <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;margin-bottom:4px;align-items:center;">
+      <input type="text" value="${ex.name}" oninput="updateExecutor(${i},'name',this.value)" placeholder="Имя">
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap;">
+        <input type="checkbox" ${ex.cuts?'checked':''} onchange="updateExecutor(${i},'cuts',this.checked)" style="width:auto;">
+        Кроит сама
+      </label>
+      <button class="danger" onclick="removeExecutor(${i})">X</button>
+    </div>
+  `).join('');
+}
+function updateExecutor(i,f,v){
+  if(!state.executors[i]) return;
+  state.executors[i][f] = v;
+  saveExecutors();
+  render();
+}
+function addExecutor(){
+  state.executors.push({id:'ex_'+(++executorCounter), name:'Новый исполнитель', cuts:false});
+  saveExecutors();
+  renderExecutors();
+  render();
+}
+function removeExecutor(i){
+  if(!confirm('Удалить исполнителя?')) return;
+  if((state.executors||[]).length <= 1){ alert('Должен остаться хотя бы один'); return; }
+  state.executors.splice(i,1);
+  saveExecutors();
+  renderExecutors();
+  render();
+}
+function getDefaultCuts(idx){
+  const list = state.executors||[];
+  if(idx >= 0 && idx < list.length) return list[idx].cuts;
+  return false;
+}
+
+// ==================== ДИЗАЙНЕРЫ ====================
+function showDesigners(){
+  renderDesigners();
+  document.getElementById('designersPanel').style.display = 'block';
+  document.getElementById('savedPanel').style.display = 'none';
+  document.getElementById('executorsPanel').style.display = 'none';
+}
+function hideDesigners(){ document.getElementById('designersPanel').style.display = 'none'; }
+function renderDesigners(){
+  const c = document.getElementById('designersList');
+  if(!c) return;
+  const list = state.designers||[];
+  c.innerHTML = list.map((d,i)=>`
+    <div style="display:grid;grid-template-columns:1fr auto;gap:6px;margin-bottom:4px;">
+      <input type="text" value="${d}" oninput="updateDesigner(${i},this.value)" placeholder="ФИО">
+      <button class="danger" onclick="removeDesigner(${i})">X</button>
+    </div>
+  `).join('');
+  updateDesignerSelect();
+}
+function updateDesigner(index,val){
+  if(!state.designers) state.designers = [];
+  state.designers[index] = val;
+  saveDesigners();
+  updateDesignerSelect();
+}
+function addDesigner(){
+  if(!state.designers) state.designers = [];
+  state.designers.push('Новый дизайнер');
+  saveDesigners();
+  renderDesigners();
+}
+function removeDesigner(i){
+  if(!confirm('Удалить дизайнера?')) return;
+  if((state.designers||[]).length <= 1){ alert('Должен остаться хотя бы один'); return; }
+  state.designers.splice(i,1);
+  saveDesigners();
+  renderDesigners();
+}
+function updateDesignerSelect(){
+  const sel = document.getElementById('designer');
+  if(!sel) return;
+  const cur = state.designer||'';
+  const list = state.designers||[];
+  sel.innerHTML = '<option value="">— выберите —</option>'
+    + list.map(d=>`<option ${cur===d?'selected':''}>${d}</option>`).join('');
+}
+
+// ==================== ИЗДЕЛИЯ ====================
+function addItem(){
+  state.items.push({
+    id:'i_'+(++itemCounter),
+    roomName:'Гостиная',
+    roomCustom:'',
+    itemName:'',
+    category:'Тюль',
+    width:'',
+    height:'',
+    inserts:'',
+    mainLines:[],
+    extraLines:[],
+    materialLines:[],
+    markups:{},
+    masterIdx:0,
+    masterCuts:true
+  });
+  render();
+}
+function removeItem(id){
+  if(!confirm('Удалить изделие?')) return;
+  state.items = state.items.filter(i=>i.id!==id);
+  render();
+}
+function getItem(id){ return state.items.find(i=>i.id===id); }
+function updateItemField(id,f,v){
+  const it = getItem(id); if(!it) return;
+  it[f] = v;
+}
+function updateItem(id,f,v){
+  const it = getItem(id); if(!it) return;
+  if(f==='category'){
+    it.category = v;
+    it.inserts = '';
+    const allowed = getMaterialsFor(v);
+    it.materialLines = it.materialLines.filter(l=>{
+      if(l.source==='custom') return true;
+      const mat = MATERIALS[l.matIdx];
+      return mat && allowed.indexOf(mat) >= 0;
+    });
+    syncMainQty(it);
+  } else {
+    it[f] = v;
+  }
+  if(f==='masterIdx') it.masterCuts = getDefaultCuts(parseInt(v));
+}
+
+function syncMainQty(it){
+  const w = evalExpr(it.width);
+  const h = evalExpr(it.height);
+  const t = getCategoryType(it.category);
+  let defQty = 0;
+  if(t === 'квм') defQty = w * h;
+  else if(t === 'пм') defQty = w;
+  else defQty = 1;
+  it.mainLines.forEach(l=>{
+    if(l.source==='custom') return;
+    if(l.manual !== true){
+      l.qty = defQty ? defQty.toFixed(2) : '0.00';
+    }
+  });
+  syncAutoRows(it);
+}
+
+function syncAutoRows(it){
+  const totalMainQty = getMainQty(it);
+  const w = evalExpr(it.width);
+  const h = evalExpr(it.height);
+  const inserts = parseInt(it.inserts)||0;
+  it.extraLines.forEach(l=>{
+    if(l.source==='custom') return;
+    const op = OPS[l.opIdx];
+    if(!op) return;
+    if(op.autoTape && l.manual !== true) l.qty = totalMainQty.toFixed(2);
+    else if(op.auto==='vert' && l.manual !== true) l.qty = h.toFixed(2);
+    else if(op.auto==='horiz' && l.manual !== true) l.qty = w.toFixed(2);
+    else if(op.roman==='circles' && l.manual !== true) l.qty = (w*h).toFixed(2);
+    else if(op.roman==='assembly' && l.manual !== true) l.qty = (w*h).toFixed(2);
+    else if(op.decor && l.manual !== true) l.qty = (2*(w+h)).toFixed(2);
+  });
+  it.materialLines.forEach(l=>{
+    if(l.source==='custom') return;
+    const mat = MATERIALS[l.matIdx];
+    if(!mat) return;
+    if(mat.romanTape && l.manual !== true) l.qty = (w * inserts).toFixed(2);
+    else if(mat.tape && l.manual !== true) l.qty = totalMainQty.toFixed(2);
+    else if(mat.synth && l.manual !== true) l.qty = Math.min(w,h).toFixed(2);
+  });
+}
+
+function getMainQty(it){
+  return (it.mainLines||[]).reduce((s,l)=>{
+    if(l.source==='custom') return s;
+    return s+(parseFloat(l.qty)||0);
+  },0);
+}
+
+function updateDims(id){
+  const it = getItem(id); if(!it) return;
+  syncMainQty(it);
+  refreshItemValues(id);
+}
+
+// Точечное обновление без перерисовки — клавиатура не закроется
+function refreshItemValues(id){
+  const it = getItem(id); if(!it) return;
+  it.mainLines.forEach((l,idx)=>{
+    if(l.source==='custom') return;
+    const qtyEl = document.querySelector('[data-ml-qty="'+id+'_'+idx+'"]');
+    if(qtyEl && l.manual !== true) qtyEl.value = l.qty;
+    const sumEl = document.getElementById('sum_main_'+id+'_'+idx);
+    if(sumEl) sumEl.textContent = fmt(evalExpr(l.price)*evalExpr(l.qty));
+  });
+  it.extraLines.forEach((l,idx)=>{
+    if(l.source==='custom') return;
+    const qtyEl = document.querySelector('[data-el-qty="'+id+'_'+idx+'"]');
+    if(qtyEl && l.manual !== true) qtyEl.value = l.qty;
+    const op = OPS[l.opIdx];
+    const sumEl = document.getElementById('sum_extra_'+id+'_'+idx);
+    if(sumEl && op) sumEl.textContent = fmt(getOpPrice(op)*evalExpr(l.qty));
+  });
+  it.materialLines.forEach((l,idx)=>{
+    if(l.source==='custom') return;
+    const qtyEl = document.querySelector('[data-mat-qty="'+id+'_'+idx+'"]');
+    if(qtyEl && l.manual !== true) qtyEl.value = l.qty;
+    const mat = MATERIALS[l.matIdx];
+    const sumEl = document.getElementById('sum_material_'+id+'_'+idx);
+    if(sumEl && mat) sumEl.textContent = fmt(mat.price*evalExpr(l.qty));
+  });
+  const totEl = document.getElementById('item_total_'+id);
+  if(totEl) totEl.textContent = fmt(calcItem(it).total);
+  const mqEl = document.getElementById('mq_'+id);
+  if(mqEl){
+    const mq = getMainQty(it);
+    const t = getCategoryType(it.category);
+    mqEl.textContent = mq.toFixed(2)+(t==='квм'?' кв.м':' м');
+  }
+  recalc();
+}
+
+// ==================== СТРОКИ ====================
+function addMainLine(id){
+  const it = getItem(id); if(!it) return;
+  const w = evalExpr(it.width);
+  const h = evalExpr(it.height);
+  const t = getCategoryType(it.category);
+  let defQty = 1;
+  if(t === 'квм') defQty = (w*h).toFixed(2);
+  else if(t === 'пм') defQty = w ? w.toFixed(2) : '1';
+  it.mainLines.push({source:'price',workName:'',qty:defQty,price:0});
+  render();
+}
+function addMainLineCustom(id){
+  const it = getItem(id); if(!it) return;
+  it.mainLines.push({source:'custom',name:'',qty:'1',price:0});
+  render();
+}
+function addExtraLine(id){
+  const it = getItem(id); if(!it) return;
+  it.extraLines.push({source:'price',opIdx:0,qty:1});
+  render();
+}
+function addExtraLineCustom(id){
+  const it = getItem(id); if(!it) return;
+  it.extraLines.push({source:'custom',name:'',qty:'1',price:0});
+  render();
+}
+function addMaterialLine(id){
+  const it = getItem(id); if(!it) return;
+  const allowed = getMaterialsFor(it.category);
+  if(allowed.length === 0){ alert('Для этой категории фурнитура не нужна'); return; }
+  const firstIdx = MATERIALS.indexOf(allowed[0]);
+  it.materialLines.push({source:'price',matIdx: firstIdx>=0?firstIdx:0, qty:1});
+  render();
+}
+function addMaterialLineCustom(id){
+  const it = getItem(id); if(!it) return;
+  it.materialLines.push({source:'custom',name:'',qty:'1',price:0});
+  render();
+}
+function removeMainLine(id,idx){ const it=getItem(id); if(it){it.mainLines.splice(idx,1);render();} }
+function removeExtraLine(id,idx){ const it=getItem(id); if(it){it.extraLines.splice(idx,1);render();} }
+function removeMaterialLine(id,idx){ const it=getItem(id); if(it){it.materialLines.splice(idx,1);render();} }
+
+function updateMainLine(id,idx,f,v){
+  const it = getItem(id); if(!it || !it.mainLines[idx]) return;
+  const l = it.mainLines[idx];
+  if(l.source === 'custom'){
+    if(f==='name') l.name = v;
+    if(f==='qty'){ l.qty = v; updateSum('main',id,idx); }
+    if(f==='price'){ l.price = evalExpr(v); updateSum('main',id,idx); }
+    return;
+  }
+  if(f==='workName'){
+    l.workName = v;
+    const work = PRICE_MAIN.find(w=>w.name===v);
+    if(work){
+      l.price = work.price;
+      const w = evalExpr(it.width), h = evalExpr(it.height);
+      const t = getCategoryType(it.category);
+      if(t === 'квм') l.qty = (w*h).toFixed(2);
+      else if(t === 'пм' && l.manual !== true) l.qty = w ? w.toFixed(2) : l.qty;
+      l.manual = false;
+    }
+    syncAutoRows(it);
+    render(); return;
+  }
+  if(f==='qty'){ l.qty = v; l.manual = true; updateSum('main',id,idx); }
+  if(f==='price'){ l.price = evalExpr(v); updateSum('main',id,idx); }
+}
+function updateExtraLine(id,idx,f,v){
+  const it = getItem(id); if(!it || !it.extraLines[idx]) return;
+  const l = it.extraLines[idx];
+  if(l.source === 'custom'){
+    if(f==='name') l.name = v;
+    if(f==='qty'){ l.qty = v; updateSum('extra',id,idx); }
+    if(f==='price'){ l.price = evalExpr(v); updateSum('extra',id,idx); }
+    return;
+  }
+  if(f==='opIdx'){
+    l.opIdx = parseInt(v);
+    l.manual = false;
+    syncAutoRows(it);
+    render(); return;
+  }
+  if(f==='qty'){ l.qty = v; l.manual = true; updateSum('extra',id,idx); }
+}
+function updateMaterialLine(id,idx,f,v){
+  const it = getItem(id); if(!it || !it.materialLines[idx]) return;
+  const l = it.materialLines[idx];
+  if(l.source === 'custom'){
+    if(f==='name') l.name = v;
+    if(f==='qty'){ l.qty = v; updateSum('material',id,idx); }
+    if(f==='price'){ l.price = evalExpr(v); updateSum('material',id,idx); }
+    return;
+  }
+  if(f==='matIdx'){
+    l.matIdx = parseInt(v);
+    l.manual = false;
+    syncAutoRows(it);
+    render(); return;
+  }
+  if(f==='qty'){ l.qty = v; l.manual = true; updateSum('material',id,idx); }
+}
+
+function updateSum(type,id,idx){
+  const it = getItem(id); if(!it) return;
+  let sum = 0;
+  if(type==='main' && it.mainLines[idx]){
+    const l = it.mainLines[idx];
+    sum = evalExpr(l.price) * evalExpr(l.qty);
+  } else if(type==='extra' && it.extraLines[idx]){
+    const l = it.extraLines[idx];
+    if(l.source==='custom') sum = evalExpr(l.price) * evalExpr(l.qty);
+    else { const op = OPS[l.opIdx]; sum = op ? getOpPrice(op) * evalExpr(l.qty) : 0; }
+  } else if(type==='material' && it.materialLines[idx]){
+    const l = it.materialLines[idx];
+    if(l.source==='custom') sum = evalExpr(l.price) * evalExpr(l.qty);
+    else { const mat = MATERIALS[l.matIdx]; sum = mat ? mat.price * evalExpr(l.qty) : 0; }
+  }
+  const el = document.getElementById('sum_'+type+'_'+id+'_'+idx);
+  if(el) el.textContent = fmt(sum);
+  const tot = document.getElementById('item_total_'+id);
+  if(tot) tot.textContent = fmt(calcItem(it).total);
+  recalc();
+}
+
+// ==================== НАЦЕНКИ ====================
+function addMarkup(id){
+  const it = getItem(id); if(!it) return;
+  const used = Object.keys(it.markups);
+  const next = MARKUPS.find(m=>used.indexOf(m.id)<0);
+  if(!next){ alert('Все наценки добавлены'); return; }
+  it.markups[next.id] = {base:next.base};
+  render();
+}
+function removeMarkup(id,mid){ const it=getItem(id); if(it){delete it.markups[mid];render();} }
+function setMarkupBase(id,mid,base){
+  const it=getItem(id); if(!it||!it.markups[mid]) return;
+  it.markups[mid].base = base; render();
+}
+function changeMarkup(id,oldMid,newMid){
+  const it=getItem(id); if(!it||!it.markups[oldMid]) return;
+  const curBase = it.markups[oldMid].base;
+  delete it.markups[oldMid];
+  it.markups[newMid] = {base:curBase};
+  render();
+}
+
+// ==================== РАСЧЁТ ====================
+function fmt(n){ return Math.round(n).toLocaleString('ru-RU')+' ₽'; }
+
+function calcItem(it){
+  const r = {
+    mainBase:0, mainPctBase:0, mainWithBaseMarkups:0,
+    extrasSum:0, materialsSum:0, workVolume:0,
+    volumeMarkupsSum:0, volumeMarkupsList:[], baseMarkupsList:[],
+    total:0, mainLinesData:[], extrasData:[], materialsData:[]
+  };
+
+  let mainBase = 0;
+  (it.mainLines||[]).forEach(l=>{
+    const sum = evalExpr(l.price) * evalExpr(l.qty);
+    mainBase += sum;
+    const name = l.source==='custom' ? (l.name||'Своя работа') : (l.workName||'—');
+    r.mainLinesData.push({name, qty:evalExpr(l.qty), price:evalExpr(l.price), sum});
+  });
+  r.mainBase = mainBase;
+
+  let pctBase = 0;
+  Object.keys(it.markups||{}).forEach(mid=>{
+    const val = it.markups[mid];
+    const m = MARKUPS.find(x=>x.id===mid);
+    if(!m) return;
+    if(val.base==='base'){ pctBase += m.pct; r.baseMarkupsList.push({name:m.name,pct:m.pct}); }
+  });
+  const h = evalExpr(it.height);
+  if(h > 3.1){
+    const extra = Math.floor(h - 3.1);
+    const pct = extra * 30;
+    pctBase += pct;
+    r.baseMarkupsList.push({name:'Высота >3,1 м (+'+pct+'%)',pct});
+  }
+  r.mainPctBase = pctBase;
+  r.mainWithBaseMarkups = mainBase * (1 + pctBase/100);
+
+  let extrasSum = 0;
+  (it.extraLines||[]).forEach(l=>{
+    let name = '', price = 0;
+    if(l.source==='custom'){ name = l.name||'Своя работа'; price = evalExpr(l.price); }
+    else { const op = OPS[l.opIdx]; if(op){ name = op.name; price = getOpPrice(op); } }
+    if(name){
+      const sum = price * evalExpr(l.qty);
+      extrasSum += sum;
+      r.extrasData.push({name, qty:evalExpr(l.qty), price, sum});
+    }
+  });
+  r.extrasSum = extrasSum;
+
+  let materialsSum = 0;
+  (it.materialLines||[]).forEach(l=>{
+    let name = '', price = 0;
+    if(l.source==='custom'){ name = l.name||'Своя фурнитура'; price = evalExpr(l.price); }
+    else { const mat = MATERIALS[l.matIdx]; if(mat){ name = mat.name; price = mat.price; } }
+    if(name){
+      const sum = price * evalExpr(l.qty);
+      materialsSum += sum;
+      r.materialsData.push({name, qty:evalExpr(l.qty), price, sum});
+    }
+  });
+  r.materialsSum = materialsSum;
+
+  const workVolume = r.mainWithBaseMarkups + extrasSum;
+  r.workVolume = workVolume;
+
+  let vms = 0;
+  Object.keys(it.markups||{}).forEach(mid=>{
+    const val = it.markups[mid];
+    const m = MARKUPS.find(x=>x.id===mid);
+    if(!m) return;
+    if(val.base==='volume'){
+      const sum = workVolume * m.pct / 100;
+      vms += sum;
+      r.volumeMarkupsList.push({name:m.name, pct:m.pct, sum});
+    }
+  });
+  r.volumeMarkupsSum = vms;
+  r.total = r.mainWithBaseMarkups + extrasSum + materialsSum + vms;
+  return r;
+}
+
+function calcItemsTotal(){ return state.items.reduce((s,it)=>s+calcItem(it).total,0); }
+
+function recalc(){
+  const total = calcItemsTotal();
+  let mt = 0;
+  if(state.urgency50) mt += total * 0.5;
+  if(state.urgency100) mt += total * 1.0;
+  const e1=document.getElementById('itemsTotal');
+  const e2=document.getElementById('grandTotal');
+  const e3=document.getElementById('markupsTotal');
+  const e4=document.getElementById('markupRow');
+  if(e1) e1.textContent = fmt(total);
+  if(e2) e2.textContent = fmt(total+mt);
+  if(e3) e3.textContent = fmt(mt);
+  if(e4) e4.style.display = mt>0?'flex':'none';
+}
+// ==================== РЕНДЕР ====================
+function render(){
+  const c = document.getElementById('itemsContainer');
+  if(!c) return;
+  if(state.items.length === 0){ c.innerHTML = ''; recalc(); return; }
+  c.innerHTML = state.items.map(it => renderItem(it)).join('');
+  recalc();
+}
+
+function renderItem(it){
+  const c = calcItem(it);
+  const w = evalExpr(it.width);
+  const h = evalExpr(it.height);
+  const catType = getCategoryType(it.category);
+  const mq = getMainQty(it);
+  const isRoman = it.category === 'Римская штора';
+  const worksInCat = PRICE_MAIN.filter(x=>x.cat===it.category);
+  const secondLabel = getSecondDimLabel(it.category);
+
+  // Строки пошива
+  let mainRows = '';
+  it.mainLines.forEach((l,idx)=>{
+    if(l.source === 'custom'){
+      mainRows += `<tr>
+        <td><input class="row-input" value="${l.name||''}" placeholder="Название работы" oninput="updateMainLine('${it.id}',${idx},'name',this.value)"></td>
+        <td class="num"><input class="row-input qty-input" value="${l.qty}" oninput="updateMainLine('${it.id}',${idx},'qty',this.value)"></td>
+        <td class="num"><input class="row-input qty-input" value="${l.price}" oninput="updateMainLine('${it.id}',${idx},'price',this.value)"></td>
+        <td class="num" id="sum_main_${it.id}_${idx}">${fmt(evalExpr(l.price)*evalExpr(l.qty))}</td>
+        <td class="actions"><button class="danger" onclick="removeMainLine('${it.id}',${idx})">X</button></td>
+      </tr>`;
+    } else {
+      const workOpts = worksInCat.map(x=>`<option ${l.workName===x.name?'selected':''}>${x.name}</option>`).join('');
+      mainRows += `<tr>
+        <td><select class="row-select" onchange="updateMainLine('${it.id}',${idx},'workName',this.value)"><option value="">— выберите —</option>${workOpts}</select></td>
+        <td class="num"><input class="row-input qty-input" data-ml-qty="${it.id}_${idx}" value="${l.qty}" oninput="updateMainLine('${it.id}',${idx},'qty',this.value)"></td>
+        <td class="num"><input class="row-input qty-input" value="${l.price}" oninput="updateMainLine('${it.id}',${idx},'price',this.value)"></td>
+        <td class="num" id="sum_main_${it.id}_${idx}">${fmt(evalExpr(l.price)*evalExpr(l.qty))}</td>
+        <td class="actions"><button class="danger" onclick="removeMainLine('${it.id}',${idx})">X</button></td>
+      </tr>`;
+    }
+  });
+  if(!mainRows) mainRows = '<tr><td colspan="5" style="padding:8px;color:#8A8578;font-size:12px;">Нет строк</td></tr>';
+
+  // Допы
+  let extraRows = '';
+  it.extraLines.forEach((l,idx)=>{
+    if(l.source === 'custom'){
+      extraRows += `<tr>
+        <td><input class="row-input" value="${l.name||''}" placeholder="Название операции" oninput="updateExtraLine('${it.id}',${idx},'name',this.value)"></td>
+        <td class="num"><input class="row-input qty-input" value="${l.qty}" oninput="updateExtraLine('${it.id}',${idx},'qty',this.value)"></td>
+        <td class="num"><input class="row-input qty-input" value="${l.price}" oninput="updateExtraLine('${it.id}',${idx},'price',this.value)"></td>
+        <td class="num" id="sum_extra_${it.id}_${idx}">${fmt(evalExpr(l.price)*evalExpr(l.qty))}</td>
+        <td class="actions"><button class="danger" onclick="removeExtraLine('${it.id}',${idx})">X</button></td>
+      </tr>`;
+    } else {
+      const op = OPS[l.opIdx];
+      const opPrice = getOpPrice(op);
+      const opOpts = OPS.map((x,i)=>`<option value="${i}" ${l.opIdx===i?'selected':''}>${x.name}</option>`).join('');
+      extraRows += `<tr>
+        <td><select class="row-select" onchange="updateExtraLine('${it.id}',${idx},'opIdx',this.value)">${opOpts}</select></td>
+        <td class="num"><input class="row-input qty-input" data-el-qty="${it.id}_${idx}" value="${l.qty}" oninput="updateExtraLine('${it.id}',${idx},'qty',this.value)"></td>
+        <td class="num">${opPrice} ₽</td>
+        <td class="num" id="sum_extra_${it.id}_${idx}">${op?fmt(opPrice*evalExpr(l.qty)):'0 ₽'}</td>
+        <td class="actions"><button class="danger" onclick="removeExtraLine('${it.id}',${idx})">X</button></td>
+      </tr>`;
+    }
+  });
+  if(!extraRows) extraRows = '<tr><td colspan="5" style="padding:8px;color:#8A8578;font-size:12px;">Нет строк</td></tr>';
+
+  // Фурнитура (с фильтром)
+  const allowedMat = getMaterialsFor(it.category);
+  let matRows = '';
+  it.materialLines.forEach((l,idx)=>{
+    if(l.source === 'custom'){
+      matRows += `<tr>
+        <td><input class="row-input" value="${l.name||''}" placeholder="Название материала" oninput="updateMaterialLine('${it.id}',${idx},'name',this.value)"></td>
+        <td class="num"><input class="row-input qty-input" value="${l.qty}" oninput="updateMaterialLine('${it.id}',${idx},'qty',this.value)"></td>
+        <td class="num"><input class="row-input qty-input" value="${l.price}" oninput="updateMaterialLine('${it.id}',${idx},'price',this.value)"></td>
+        <td class="num" id="sum_material_${it.id}_${idx}">${fmt(evalExpr(l.price)*evalExpr(l.qty))}</td>
+        <td class="actions"><button class="danger" onclick="removeMaterialLine('${it.id}',${idx})">X</button></td>
+      </tr>`;
+    } else {
+      const mat = MATERIALS[l.matIdx];
+      const matOpts = allowedMat.map(x=>{
+        const i = MATERIALS.indexOf(x);
+        return `<option value="${i}" ${l.matIdx===i?'selected':''}>${x.name}</option>`;
+      }).join('');
+      matRows += `<tr>
+        <td><select class="row-select" onchange="updateMaterialLine('${it.id}',${idx},'matIdx',this.value)">${matOpts}</select></td>
+        <td class="num"><input class="row-input qty-input" data-mat-qty="${it.id}_${idx}" value="${l.qty}" oninput="updateMaterialLine('${it.id}',${idx},'qty',this.value)"></td>
+        <td class="num">${mat?mat.price:0} ₽</td>
+        <td class="num" id="sum_material_${it.id}_${idx}">${mat?fmt(mat.price*evalExpr(l.qty)):'0 ₽'}</td>
+        <td class="actions"><button class="danger" onclick="removeMaterialLine('${it.id}',${idx})">X</button></td>
+      </tr>`;
+    }
+  });
+  if(!matRows) matRows = '<tr><td colspan="5" style="padding:8px;color:#8A8578;font-size:12px;">'+(allowedMat.length===0?'Для этой категории фурнитура не нужна':'Нет строк')+'</td></tr>';
+
+  // Наценки
+  let markupRows = '';
+  Object.keys(it.markups||{}).forEach(mid=>{
+    const val = it.markups[mid];
+    const opts = MARKUPS.map(x=>`<option value="${x.id}" ${mid===x.id?'selected':''}>${x.name} +${x.pct}%</option>`).join('');
+    markupRows += `<div class="markup-row">
+      <select onchange="changeMarkup('${it.id}','${mid}',this.value)">${opts}</select>
+      <select onchange="setMarkupBase('${it.id}','${mid}',this.value)">
+        <option value="base" ${val.base==='base'?'selected':''}>от базы</option>
+        <option value="volume" ${val.base==='volume'?'selected':''}>от объёма</option>
+      </select>
+      <button class="danger" onclick="removeMarkup('${it.id}','${mid}')">X</button>
+    </div>`;
+  });
+  if(!markupRows) markupRows = '<div style="color:#8A8578;font-size:12px;padding:4px 0;">Нет наценок</div>';
+
+  // Поле «Вставок» — только для римской
+  const insertsHtml = isRoman ? `
+    <div class="item-info" style="grid-template-columns:auto 1fr auto 1fr;border-top:1px solid #C5CFC1;">
+      <label>Вставок, шт</label>
+      <input type="text" value="${it.inserts||''}" placeholder="например, 4" oninput="updateItemField('${it.id}','inserts',this.value);updateDims('${it.id}')">
+      <span></span><span></span>
+    </div>` : '';
+
+  // Селект исполнителя
+  const execList = state.executors||[];
+  const execOpts = execList.map((ex,i)=>`<option value="${i}" ${it.masterIdx===i?'selected':''}>${ex.name}</option>`).join('');
+
+  return `
+    <div class="item">
+      <div class="item-head">
+        <select onchange="updateItemField('${it.id}','roomName',this.value);render();">
+          ${['Гостиная','Спальня','Детская','Кухня','Ванная','Прихожая','Кабинет','custom'].map(x=>`<option value="${x}" ${it.roomName===x?'selected':''}>${x==='custom'?'Своё название':x}</option>`).join('')}
+        </select>
+        ${it.roomName==='custom'?`<input type="text" value="${it.roomCustom||''}" placeholder="Название комнаты" oninput="updateItemField('${it.id}','roomCustom',this.value)">`:''}
+        <span class="sep">.</span>
+        <input type="text" value="${it.itemName||''}" placeholder="Название изделия (например: Портьера на подкладке, 4 шт)" oninput="updateItemField('${it.id}','itemName',this.value)">
+        <button class="danger" onclick="removeItem('${it.id}')">Удалить</button>
+      </div>
+
+      <div class="work-row">
+        <label>Категория</label>
+        <select onchange="updateItem('${it.id}','category',this.value);render();">
+          ${CATEGORIES.map(x=>`<option ${it.category===x?'selected':''}>${x}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="item-info">
+        <label>Ширина, м</label>
+        <input type="text" value="${it.width||''}" placeholder="1.94 или 2+2" oninput="updateItemField('${it.id}','width',this.value);updateDims('${it.id}')">
+        <label>${secondLabel}</label>
+        <input type="text" value="${it.height||''}" placeholder="2.02" oninput="updateItemField('${it.id}','height',this.value);updateDims('${it.id}')">
+      </div>
+      ${insertsHtml}
+
+      <div class="section">
+        <div class="section-head">Пошив (метраж пошива авто: <span id="mq_${it.id}">${mq.toFixed(2)} ${catType==='квм'?'кв.м':'м'}</span>)</div>
+        <div class="section-body">
+          <table class="section-table">
+            <thead><tr><th>Описание</th><th class="num">Кол-во</th><th class="num">Цена</th><th class="num">Стоимость</th><th></th></tr></thead>
+            <tbody>${mainRows}</tbody>
+          </table>
+          <button class="add-line" onclick="addMainLine('${it.id}')">+ Строка из прайса</button>
+          <button class="add-line" onclick="addMainLineCustom('${it.id}')">+ Своя строка</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">Дополнительные работы</div>
+        <div class="section-body">
+          <table class="section-table">
+            <thead><tr><th>Описание</th><th class="num">Кол-во</th><th class="num">Цена</th><th class="num">Стоимость</th><th></th></tr></thead>
+            <tbody>${extraRows}</tbody>
+          </table>
+          <button class="add-line" onclick="addExtraLine('${it.id}')">+ Из прайса</button>
+          <button class="add-line" onclick="addExtraLineCustom('${it.id}')">+ Своя строка</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">Фурнитура</div>
+        <div class="section-body">
+          <table class="section-table">
+            <thead><tr><th>Описание</th><th class="num">Кол-во</th><th class="num">Цена</th><th class="num">Стоимость</th><th></th></tr></thead>
+            <tbody>${matRows}</tbody>
+          </table>
+          ${allowedMat.length > 0 ? `<button class="add-line" onclick="addMaterialLine('${it.id}')">+ Из прайса</button>` : ''}
+          <button class="add-line" onclick="addMaterialLineCustom('${it.id}')">+ Своя строка</button>
+        </div>
+        <div class="hint-note">На фурнитуру наценки не начисляются.</div>
+      </div>
+
+      <div class="markups-section">
+        <div class="markups-head">Наценки</div>
+        <div class="markups-body">
+          ${markupRows}
+          <button class="add-line" onclick="addMarkup('${it.id}')">+ Наценка</button>
+        </div>
+      </div>
+
+      <div class="item-footer">
+        <span style="font-size:13px;color:#8A8578;">Итого по изделию:</span>
+        <span class="item-total" id="item_total_${it.id}">${fmt(c.total)}</span>
+      </div>
+
+      <div class="master-row">
+        <label>Исполнитель:</label>
+        <select onchange="updateItem('${it.id}','masterIdx',parseInt(this.value));render();">
+          ${execOpts}
+          <option value="999" ${it.masterIdx===999?'selected':''}>Не указан</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" ${it.masterCuts?'checked':''} onchange="updateItem('${it.id}','masterCuts',this.checked)">
+          Кроит сама
+        </label>
+      </div>
+    </div>`;
+}
+
+// ==================== КОПИРОВАНИЕ В GOOGLE ТАБЛИЦЫ ====================
+function copyForSheets(){
+  syncHeader();
+  const itemsTotal = calcItemsTotal();
+  let mt = 0;
+  if(state.urgency50) mt += itemsTotal*0.5;
+  if(state.urgency100) mt += itemsTotal*1.0;
+  const gt = itemsTotal + mt;
+
+  const header = state.orderNum ? `Заказ ${state.orderNum}. Расчёт стоимости пошива` : 'Расчёт стоимости пошива';
+
+  // HTML-таблица с линиями и жирным
+  let html = `<table style="border-collapse:collapse;font-family:Verdana;font-size:10pt;">`;
+  html += `<tr><td colspan="4" style="font-weight:bold;font-size:12pt;padding:4px;">${header}</td></tr>`;
+  html += `<tr><td colspan="4" style="height:8px;"></td></tr>`;
+
+  state.items.forEach(it=>{
+    const c = calcItem(it);
+    const roomName = it.roomName==='custom' ? (it.roomCustom||'Комната') : (it.roomName||'Комната');
+    const itemName = it.itemName || 'Изделие';
+
+    html += `<tr><td colspan="4" style="font-weight:bold;background:#C5CFC1;padding:4px;border:1px solid #000;">${roomName}. ${itemName}</td></tr>`;
+    html += `<tr>
+      <td style="font-weight:bold;background:#e8e8e8;padding:3px;border:1px solid #999;">Описание</td>
+      <td style="font-weight:bold;background:#e8e8e8;padding:3px;border:1px solid #999;text-align:right;">Кол-во</td>
+      <td style="font-weight:bold;background:#e8e8e8;padding:3px;border:1px solid #999;text-align:right;">Цена</td>
+      <td style="font-weight:bold;background:#e8e8e8;padding:3px;border:1px solid #999;text-align:right;">Стоимость</td>
+    </tr>`;
+
+    c.mainLinesData.forEach(l=>{
+      html += `<tr>
+        <td style="padding:3px;border:1px solid #999;">${l.name}</td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${l.qty.toFixed(2)}</td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${l.price}</td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${Math.round(l.sum)}</td>
+      </tr>`;
+    });
+    c.extrasData.forEach(l=>{
+      html += `<tr>
+        <td style="padding:3px;border:1px solid #999;">${l.name}</td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${l.qty.toFixed(2)}</td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${l.price}</td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${Math.round(l.sum)}</td>
+      </tr>`;
+    });
+    c.materialsData.forEach(l=>{
+      html += `<tr>
+        <td style="padding:3px;border:1px solid #999;">${l.name}</td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${l.qty.toFixed(2)}</td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${l.price}</td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${Math.round(l.sum)}</td>
+      </tr>`;
+    });
+    c.volumeMarkupsList.forEach(m=>{
+      html += `<tr>
+        <td style="padding:3px;border:1px solid #999;">${m.name}</td>
+        <td style="padding:3px;border:1px solid #999;"></td>
+        <td style="padding:3px;border:1px solid #999;"></td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${Math.round(m.sum)}</td>
+      </tr>`;
+    });
+    html += `<tr>
+      <td colspan="3" style="padding:3px;border:1px solid #999;text-align:right;font-weight:bold;">Итого:</td>
+      <td style="padding:3px;border:1px solid #999;text-align:right;font-weight:bold;">${Math.round(c.total)}</td>
+    </tr>`;
+    html += `<tr><td colspan="4" style="height:6px;"></td></tr>`;
+  });
+
+  if(state.urgency50 || state.urgency100){
+    if(state.urgency50){
+      html += `<tr>
+        <td colspan="3" style="padding:3px;border:1px solid #999;">Срочность (+50%)</td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${Math.round(itemsTotal*0.5)}</td>
+      </tr>`;
+    }
+    if(state.urgency100){
+      html += `<tr>
+        <td colspan="3" style="padding:3px;border:1px solid #999;">Очень срочно (+100%)</td>
+        <td style="padding:3px;border:1px solid #999;text-align:right;">${Math.round(itemsTotal*1.0)}</td>
+      </tr>`;
+    }
+  }
+
+  html += `<tr>
+    <td colspan="3" style="padding:5px;border:2px double #000;text-align:right;font-weight:bold;font-size:12pt;">ВСЕГО К ОПЛАТЕ:</td>
+    <td style="padding:5px;border:2px double #000;text-align:right;font-weight:bold;font-size:12pt;">${Math.round(gt)}</td>
+  </tr>`;
+  html += `</table>`;
+
+  // Плоский текст
+  const lines = [];
+  lines.push(header);
+  lines.push('');
+  state.items.forEach(it=>{
+    const c = calcItem(it);
+    const roomName = it.roomName==='custom' ? (it.roomCustom||'Комната') : (it.roomName||'Комната');
+    const itemName = it.itemName || 'Изделие';
+    lines.push(`${roomName}. ${itemName}`);
+    lines.push(['Описание','Кол-во','Цена','Стоимость'].join('\t'));
+    c.mainLinesData.forEach(l=>{ lines.push([l.name, String(l.qty).replace('.',','), l.price, Math.round(l.sum)].join('\t')); });
+    c.extrasData.forEach(l=>{ lines.push([l.name, String(l.qty).replace('.',','), l.price, Math.round(l.sum)].join('\t')); });
+    c.materialsData.forEach(l=>{ lines.push([l.name, String(l.qty).replace('.',','), l.price, Math.round(l.sum)].join('\t')); });
+    c.volumeMarkupsList.forEach(m=>{ lines.push([m.name,'','',Math.round(m.sum)].join('\t')); });
+    lines.push(['','','Итого:',Math.round(c.total)].join('\t'));
+    lines.push('');
+  });
+  if(state.urgency50 || state.urgency100){
+    if(state.urgency50) lines.push(['Срочность (+50%)','','',Math.round(itemsTotal*0.5)].join('\t'));
+    if(state.urgency100) lines.push(['Очень срочно (+100%)','','',Math.round(itemsTotal*1.0)].join('\t'));
+    lines.push('');
+  }
+  lines.push(['','','ВСЕГО К ОПЛАТЕ:',Math.round(gt)].join('\t'));
+
+  copyRichText(html, lines.join('\n'));
+  alert('Скопировано! Откройте Google Таблицы и вставьте.');
+}
+
+function copyRichText(html, plain){
+  if(navigator.clipboard && window.ClipboardItem){
+    try{
+      const item = new ClipboardItem({
+        'text/html': new Blob([html], {type:'text/html'}),
+        'text/plain': new Blob([plain], {type:'text/plain'})
+      });
+      navigator.clipboard.write([item]).catch(()=>copyViaHtmlTextarea(html, plain));
+      return;
+    }catch(e){}
+  }
+  copyViaHtmlTextarea(html, plain);
+}
+
+function copyViaHtmlTextarea(html, plain){
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.left = '-9999px';
+  container.innerHTML = html;
+  document.body.appendChild(container);
+  const range = document.createRange();
+  range.selectNodeContents(container);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  try{ document.execCommand('copy'); }catch(e){ copyText(plain); }
+  sel.removeAllRanges();
+  document.body.removeChild(container);
+}
+
+function copyText(text){
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text);
+      return;
+    }
+  }catch(e){}
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+}
+
+// ==================== ПЕЧАТЬ ====================
+function buildPrintHtml(){
+  syncHeader();
+  const itemsTotal = calcItemsTotal();
+  let mt = 0;
+  if(state.urgency50) mt += itemsTotal*0.5;
+  if(state.urgency100) mt += itemsTotal*1.0;
+  const gt = itemsTotal + mt;
+  const title = state.orderNum ? `ЗАКАЗ ${state.orderNum}. РАСЧЁТ СТОИМОСТИ ПОШИВА` : 'РАСЧЁТ СТОИМОСТИ ПОШИВА';
+
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Расчёт</title><style>
+@page{size:A4;margin:12mm;}
+body{font-family:Verdana,Geneva,sans-serif;font-size:10px;color:#000;margin:0;padding:0;line-height:1.35;}
+h1{font-family:Verdana;text-align:center;font-size:12px;font-weight:bold;margin:0 0 10px;}
+.hdr{font-size:10px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #000;}
+.hdr span{display:inline-block;margin-right:16px;}
+.title{font-size:10px;font-weight:bold;margin:12px 0 4px;padding:5px 8px;background:#e8e8e8;border-top:1px solid #000;border-bottom:1px solid #000;}
+table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:2px;font-family:Verdana;}
+th{font-family:Verdana;text-align:left;padding:3px 6px;border-bottom:1px solid #000;background:#f0f0f0;font-weight:bold;font-size:10px;}
+th.r,td.r{text-align:right;white-space:nowrap;}
+td{padding:2px 6px;border-bottom:1px dotted #ccc;vertical-align:top;font-size:10px;}
+.total{text-align:right;font-weight:bold;font-size:10px;padding:4px 6px 6px;border-top:1px solid #999;}
+.grand{text-align:right;font-size:12px;font-weight:bold;padding:12px 6px;border-top:3px double #000;border-bottom:3px double #000;margin-top:14px;}
+.markups{font-size:10px;margin:10px 0;}
+</style></head><body>`;
+  html += `<h1>${title}</h1><div class="hdr">`;
+  if(state.readyDate) html += `<span><b>Дата готовности:</b> ${state.readyDate}</span>`;
+  if(state.designer) html += `<span><b>Дизайнер:</b> ${state.designer}</span>`;
+  if(state.projectName) html += `<span><b>Проект:</b> ${state.projectName}</span>`;
+  html += `</div>`;
+
+  state.items.forEach(it=>{
+    const c = calcItem(it);
+    const roomName = it.roomName==='custom' ? (it.roomCustom||'Комната') : (it.roomName||'Комната');
+    const itemName = it.itemName || 'Изделие';
+    html += `<div class="title">${roomName}. ${itemName}</div>`;
+    html += `<table><thead><tr><th>Описание</th><th class="r">Кол-во</th><th class="r">Цена, р</th><th class="r">Стоимость, р</th></tr></thead><tbody>`;
+    c.mainLinesData.forEach(l=>{
+      html += `<tr><td>${l.name}</td><td class="r">${l.qty.toFixed(2)}</td><td class="r">${l.price}</td><td class="r">${fmt(l.sum)}</td></tr>`;
+    });
+    c.extrasData.forEach(l=>{
+      html += `<tr><td>${l.name}</td><td class="r">${l.qty.toFixed(2)}</td><td class="r">${l.price}</td><td class="r">${fmt(l.sum)}</td></tr>`;
+    });
+    c.materialsData.forEach(l=>{
+      html += `<tr><td>${l.name}</td><td class="r">${l.qty.toFixed(2)}</td><td class="r">${l.price}</td><td class="r">${fmt(l.sum)}</td></tr>`;
+    });
+    c.volumeMarkupsList.forEach(m=>{
+      html += `<tr><td>${m.name}</td><td class="r">—</td><td class="r">—</td><td class="r">${fmt(m.sum)}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+    html += `<div class="total">Итого: ${fmt(c.total)}</div>`;
+  });
+
+  if(state.urgency50 || state.urgency100){
+    html += `<div class="markups">`;
+    if(state.urgency50) html += `<div>Срочность (+50%): ${fmt(itemsTotal*0.5)}</div>`;
+    if(state.urgency100) html += `<div>Очень срочно (+100%): ${fmt(itemsTotal*1.0)}</div>`;
+    html += `</div>`;
+  }
+  html += `<div class="grand">ВСЕГО К ОПЛАТЕ: ${fmt(gt)}</div>`;
+  html += `</body></html>`;
+  return html;
+}
+
+function buildMastersHtml(){
+  syncHeader();
+  const {masters, totalWork, totalMaterials, totalFund, profit} = calcMasters();
+  const totalProject = totalWork + totalMaterials;
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ведомость ЗП</title><style>
+@page{size:A4;margin:12mm;}
+body{font-family:Verdana,Geneva,sans-serif;font-size:10px;color:#000;margin:0;padding:0;line-height:1.4;}
+h1{font-size:12px;font-weight:bold;text-align:center;margin:0 0 10px;}
+.hdr{font-size:10px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #000;}
+.hdr span{display:inline-block;margin-right:16px;}
+.title{font-size:10px;font-weight:bold;margin:14px 0 4px;padding:5px 8px;background:#e8e8e8;border-top:1px solid #000;border-bottom:1px solid #000;}
+table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:8px;}
+th{text-align:left;padding:3px 6px;border-bottom:1px solid #000;background:#f0f0f0;font-weight:bold;}
+th.r,td.r{text-align:right;}
+td{padding:3px 6px;border-bottom:1px dotted #ccc;}
+</style></head><body>`;
+  html += `<h1>ВЕДОМОСТЬ ЗП ПО ПРОЕКТУ</h1><div class="hdr">`;
+  if(state.orderNum) html += `<span><b>Заказ №:</b> ${state.orderNum}</span>`;
+  if(state.projectName) html += `<span><b>Проект:</b> ${state.projectName}</span>`;
+  if(state.designer) html += `<span><b>Дизайнер:</b> ${state.designer}</span>`;
+  html += `</div>`;
+  html += `<table>
+    <tr><td>Стоимость работ (без фурнитуры)</td><td class="r">${fmt(totalWork)}</td></tr>
+    <tr><td>Фурнитура</td><td class="r">${fmt(totalMaterials)}</td></tr>
+    <tr><td><b>Всего по проекту</b></td><td class="r"><b>${fmt(totalProject)}</b></td></tr>
+  </table>`;
+  html += `<table>
+    <tr><td>Фонд мастеров (50%)</td><td class="r">${fmt(totalFund)}</td></tr>
+    <tr><td>Прибыль салона (50%)</td><td class="r">${fmt(profit)}</td></tr>
+  </table>`;
+  html += `<div class="title">РАСПРЕДЕЛЕНИЕ ФОНДА</div>`;
+  html += `<table><thead><tr><th>Мастер</th><th class="r">Изделий</th><th class="r">Сумма</th></tr></thead><tbody>`;
+  masters.forEach(m=>{
+    html += `<tr><td>${m.name}</td><td class="r">${m.items}</td><td class="r"><b>${fmt(m.sum)}</b></td></tr>`;
+  });
+  html += `</tbody></table></body></html>`;
+  return html;
+}
+
+function printDoc(){
+  syncHeader();
+  const html = buildPrintHtml();
+  const w = window.open('', '_blank');
+  if(w){
+    w.document.write(html);
+    w.document.close();
+    setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} }, 400);
+  } else {
+    downloadHtml(html, 'Заказ_'+(state.orderNum||'')+'_Расчёт.html');
+  }
+}
+
+function printMasters(){
+  syncHeader();
+  const html = buildMastersHtml();
+  const w = window.open('', '_blank');
+  if(w){
+    w.document.write(html);
+    w.document.close();
+    setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} }, 400);
+  } else {
+    downloadHtml(html, 'Заказ_'+(state.orderNum||'')+'_ЗП.html');
+  }
+}
+
+function downloadHtml(html, filename){
+  const blob = new Blob([html],{type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ==================== ЗП ====================
+function calcMasters(){
+  const masters = (state.executors||[]).map(ex=>({name:ex.name, sum:0, items:0}));
+  if(!masters.length) return {masters:[], totalWork:0, totalMaterials:0, totalFund:0, profit:0};
+  const zkIdx = masters.length - 1; // Закройщик — последний в списке
+
+  let totalWork = 0, totalMaterials = 0;
+  state.items.forEach(it=>{
+    const c = calcItem(it);
+    const workSum = c.workVolume + c.volumeMarkupsSum;
+    totalWork += workSum;
+    totalMaterials += c.materialsSum;
+    const fund = workSum / 2;
+    const mi = it.masterIdx;
+    if(mi >= masters.length || mi === 999) return;
+    if(it.masterCuts){
+      masters[mi].sum += fund;
+      masters[mi].items += 1;
+    } else {
+      masters[mi].sum += fund * 0.7;
+      if(masters[zkIdx]) masters[zkIdx].sum += fund * 0.3;
+      masters[mi].items += 1;
+      if(masters[zkIdx]) masters[zkIdx].items += 1;
+    }
+  });
+  return {masters, totalWork, totalMaterials, totalFund: totalWork/2, profit: totalWork/2};
+}
+
+// ==================== ХРАНЕНИЕ ====================
+const STORAGE_KEY = 'curtain_calc_v6';
+
+function getSaved(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch(e){ return []; } }
+function setSaved(a){ localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); }
+
+function syncHeader(){
+  state.orderNum = document.getElementById('orderNum').value;
+  state.readyDate = document.getElementById('readyDate').value;
+  state.designer = document.getElementById('designer').value;
+  state.projectName = document.getElementById('projectName').value;
+  state.urgency50 = document.getElementById('urgency50').checked;
+  state.urgency100 = document.getElementById('urgency100').checked;
+}
+
+function saveToCloud(){
+  syncHeader();
+  state.executors = state.executors||loadExecutors();
+  state.designers = state.designers||loadDesigners();
+  const orders = getSaved();
+  const order = {id:'o_'+Date.now(), savedAt:new Date().toISOString(), state:JSON.parse(JSON.stringify(state))};
+  const eIdx = orders.findIndex(o=>o.state.orderNum && o.state.orderNum===state.orderNum && o.state.projectName===state.projectName);
+  if(eIdx>=0) orders[eIdx] = order; else orders.push(order);
+  setSaved(orders);
+  alert('Расчёт сохранён');
+}
+
+function showSaved(){
+  const panel = document.getElementById('savedPanel');
+  const list = document.getElementById('savedList');
+  const orders = getSaved().slice().reverse();
+  if(!orders.length){
+    list.innerHTML = '<div style="padding:16px;text-align:center;color:#8A8578;">Нет сохранённых расчётов</div>';
+  } else {
+    list.innerHTML = orders.map(o=>{
+      const st = o.state;
+      let total = 0;
+      (st.items||[]).forEach(it=>{ total += calcItem(it).total; });
+      const date = new Date(o.savedAt).toLocaleDateString('ru-RU');
+      return `<div class="saved-item">
+        <div class="saved-info">
+          <div class="saved-name">${st.orderNum?('№ '+st.orderNum+' — '):''}${st.projectName||'Без названия'}</div>
+          <div class="saved-date">${date}${st.designer?' · '+st.designer:''}</div>
+        </div>
+        <div class="saved-sum">${fmt(total)}</div>
+        <button class="mini" onclick="loadOrder('${o.id}')">Открыть</button>
+        <button class="danger" onclick="deleteOrder('${o.id}')">X</button>
+      </div>`;
+    }).join('');
+  }
+  panel.style.display = 'block';
+  document.getElementById('executorsPanel').style.display = 'none';
+  document.getElementById('designersPanel').style.display = 'none';
+}
+function hideSaved(){ document.getElementById('savedPanel').style.display = 'none'; }
+
+function loadOrder(id){
+  const order = getSaved().find(o=>o.id===id);
+  if(!order){ alert('Не найден'); return; }
+  const savedExecutors = state.executors;
+  const savedDesigners = state.designers;
+  state = JSON.parse(JSON.stringify(order.state));
+  if(!state.executors) state.executors = savedExecutors || loadExecutors();
+  if(!state.designers) state.designers = savedDesigners || loadDesigners();
+  document.getElementById('orderNum').value = state.orderNum||'';
+  document.getElementById('readyDate').value = state.readyDate||'';
+  document.getElementById('projectName').value = state.projectName||'';
+  document.getElementById('urgency50').checked = state.urgency50||false;
+  document.getElementById('urgency100').checked = state.urgency100||false;
+  updateDesignerSelect();
+  document.getElementById('designer').value = state.designer||'';
+  hideSaved();
+  render();
+}
+
+function deleteOrder(id){
+  if(!confirm('Удалить?')) return;
+  setSaved(getSaved().filter(o=>o.id!==id));
+  showSaved();
+}
+
+function newOrder(){
+  if(!confirm('Начать новый расчёт?')) return;
+  const savedExecutors = state.executors;
+  const savedDesigners = state.designers;
+  state = {orderNum:'',readyDate:'',designer:'',projectName:'',items:[],urgency50:false,urgency100:false,executors:savedExecutors,designers:savedDesigners};
+  document.getElementById('orderNum').value='';
+  document.getElementById('readyDate').value='';
+  document.getElementById('projectName').value='';
+  document.getElementById('urgency50').checked=false;
+  document.getElementById('urgency100').checked=false;
+  itemCounter=0;
+  hideSaved();
+  render();
+}
+
+function exportBackup(){
+  const json = JSON.stringify(getSaved(), null, 2);
+  const blob = new Blob([json],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date().toLocaleDateString('ru-RU').replace(/\./g,'-');
+  a.href = url; a.download = 'Заказы_'+d+'.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importBackup(){
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = ev=>{
+      try{
+        const imported = JSON.parse(ev.target.result);
+        if(!Array.isArray(imported)) throw new Error('Неверный формат');
+        if(!confirm('Добавить '+imported.length+' расчётов?')) return;
+        setSaved(getSaved().concat(imported));
+        alert('Импортировано: '+imported.length);
+        showSaved();
+      }catch(err){ alert('Ошибка: '+err.message); }
+    };
+    r.readAsText(f);
+  };
+  input.click();
+}
+
+// ==================== СОБЫТИЯ ====================
+document.getElementById('orderNum').addEventListener('input',e=>state.orderNum=e.target.value);
+document.getElementById('readyDate').addEventListener('input',e=>state.readyDate=e.target.value);
+document.getElementById('projectName').addEventListener('input',e=>state.projectName=e.target.value);
+
+// ==================== СТАРТ ====================
+updateDesignerSelect();
+document.getElementById('designer').value = state.designer||'';
+render();
+</script>
+</body>
+</html>
